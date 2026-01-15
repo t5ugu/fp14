@@ -9,6 +9,9 @@ struct color { unsigned char r, g, b; };
 struct atlas { int x, y, h, w; };
 
 void drawPixel(CANVAS c, int x, int y, struct color clr) {
+    if (x < 0 || x >= CANVAS_WIDTH || y < 0 || y >= CANVAS_HEIGHT) {
+        return;
+    }
     c[x][y] = clr;
 }
 
