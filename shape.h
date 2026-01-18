@@ -1,3 +1,6 @@
+#ifndef SHAPE_H
+#define SHAPE_H
+
 struct color { unsigned char r, g, b; };
 
 #define CANVAS_WIDTH 400
@@ -32,3 +35,5 @@ void drawIsocelesTriangle(CANVAS c, struct atlas a, struct color clr);
 // 点(x, y) を原点とする波。
 // A sin(ωt + θ)  (0 <= t <= length)
 void drawWave(CANVAS c, int x, int y, int length, int amplitude, int omega, int theta);
+
+#endif

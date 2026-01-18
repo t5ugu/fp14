@@ -1,5 +1,8 @@
 #include "shape.h"
 
+#ifndef IMG_H
+#define IMG_H
+
 /* --------------------------------------------------
    アニメーション用パーツ描画関数 (Wrapper)
    -------------------------------------------------- */
@@ -13,3 +16,5 @@ void drawGoal(CANVAS c, struct atlas a, int t);
 
 /* つぶれたボールを描く */
 void drawSquashedBall(CANVAS c, int x, int y);
+
+#endif
