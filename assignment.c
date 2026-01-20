@@ -36,7 +36,7 @@ void clearCanvas(CANVAS c) {
 }
 
 void writeCanvas(CANVAS c) {
-  sprintf(fname, "frame_%04d.ppm", frame_count++);
+  sprintf(fname, "out/frame_%04d.ppm", frame_count++);
   FILE *f = fopen(fname, "wb");
   if(f == NULL) { fprintf(stderr, "can't open %s\n", fname); exit(1); }
   fprintf(f, "P6\n%d %d\n255\n", CANVAS_WIDTH, CANVAS_HEIGHT);
