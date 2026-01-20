@@ -11,7 +11,6 @@ static struct color bgColor = {0, 127, 255};
 static struct color ballColor = {192, 192, 192};
 static struct color holeColor = {32, 32, 32};
 static FRAME_t crashTime = 7, bounceTime = 26;
-static int GROUND_Y = 250;
 
 struct atlas* mkAtlas(int x, int y, int w, int h) {
   struct atlas* a = malloc(sizeof(struct atlas));

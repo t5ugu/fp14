@@ -21,13 +21,14 @@ void animateBall(
 
     for (FRAME_t t = 0; t < stroke; t++) {
         FRAME_t frame = asZero + t;
-        double x, y;
+        double x, y, h;
 
         /* ① 地面でつぶれている状態 */
         if (t < crashTime) {
             x = a.x;
             y = a.y + a.h;
-            drawSquashedBall(cs[frame], (int)x, (int)y);
+            h = (double)a.h * t / crashTime / 2;
+            drawEllipse(cs[frame], (struct atlas){(int)(x - BALL_RAD), GROUND_Y - (int)h, BALL_RAD * 2, (int)h}, ballColor);
         }
         /* ② 放物運動で跳ね上がる状態 */
         else if (t < crashTime + bounceTime) {
@@ -44,7 +45,8 @@ void animateBall(
         else {
             x = a.x + a.w;
             y = a.y + a.h;
-            drawSquashedBall(cs[frame], (int)x, (int)y);
+            h = (double)a.h * (t - crashTime - bounceTime) / crashTime / 2;
+            drawEllipse(cs[frame], (struct atlas){(int)(x - BALL_RAD), GROUND_Y - (int)h, BALL_RAD * 2, (int)h}, ballColor);
         }
     }
 }

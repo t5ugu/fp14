@@ -11,17 +11,10 @@ struct color { unsigned char r, g, b; };
 // 左から x px, 上から y px, 右向きに h px, 下向きに w px
 struct atlas { int x, y, h, w; };
 
-void drawPixel(CANVAS c, int x, int y, struct color clr) {
-    if (x < 0 || x >= CANVAS_WIDTH || y < 0 || y >= CANVAS_HEIGHT) {
-        return;
-    }
-    c[x][y] = clr;
-}
+void drawPixel(CANVAS c, int x, int y, struct color clr);
 
 // 中心点(x, y)、半径 radius の円
-void drawCircle(CANVAS c, int x, int y, int radius, struct color clr) {
-    drawEllipse(c, (struct atlas){x - radius, y - radius, 2 * radius, 2 * radius}, clr);
-}
+void drawCircle(CANVAS c, int x, int y, int radius, struct color clr);
 
 // 長方形
 void drawRectangle(CANVAS c, struct atlas a, struct color clr);
