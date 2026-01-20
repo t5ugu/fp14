@@ -8,4 +8,4 @@ rm ./out/*.ppm ;
 convert -delay 5 out/frame*.ppm animate1.gif
 ```
 
-[anim](./animate1.gif)
+![anim](./animate1.gif)
