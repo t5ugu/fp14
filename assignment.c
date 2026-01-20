@@ -1,6 +1,6 @@
 #include "animate.h"
 #include "img.h"
-// #include "shape.h" // animate.h で既に include 済み
+#include "shape.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -14,12 +14,6 @@ static const struct color ballColor = {192, 192, 192};
 static const FRAME_t crashTime = 1, bounceTime = 30;
 static const FRAME_t stroke = crashTime + bounceTime + crashTime;
 static const FRAME_t halfStroke = stroke / 2;
-
-struct atlas* mkAtlas(int x, int y, int w, int h) {
-  struct atlas* a = malloc(sizeof(struct atlas));
-  a->x = x; a->y = y; a->w = w; a->h = h;
-  return a;
-}
 
 CANVAS createCanvas() {
   CANVAS canvas = malloc(sizeof(struct color*) * CANVAS_WIDTH);
@@ -37,27 +31,24 @@ void clearCanvas(CANVAS c) {
   }
 }
 
-void writeCanvas(CANVAS c) {
-  sprintf(fname, "out/frame_%04d.ppm", frame_count++);
-  FILE *f = fopen(fname, "wb");
-  if(f == NULL) { fprintf(stderr, "can't open %s\n", fname); exit(1); }
-  fprintf(f, "P6\n%d %d\n255\n", CANVAS_WIDTH, CANVAS_HEIGHT);
-  unsigned char buf[CANVAS_HEIGHT][CANVAS_WIDTH][3];
-  for (int x = 0; x < CANVAS_WIDTH; x++) {
-    for (int y = 0; y < CANVAS_HEIGHT; y++) {
-      buf[CANVAS_HEIGHT-1-y][x][0] = c[x][y].r;
-      buf[CANVAS_HEIGHT-1-y][x][1] = c[x][y].g;
-      buf[CANVAS_HEIGHT-1-y][x][2] = c[x][y].b;
-    }
-  }
-
-  fwrite(buf, sizeof(buf), 1, f);
-  fclose(f);
-}
-
 void writeCanvases(CANVAS* cs, FRAME_t start, FRAME_t end) {
+  unsigned char buf[CANVAS_HEIGHT][CANVAS_WIDTH][3];
+  
   for (int i = start; i < end; i++) {
-    writeCanvas(cs[i]);
+    sprintf(fname, "out/frame_%04d.ppm", frame_count++);
+    FILE *f = fopen(fname, "wb");
+    if(f == NULL) { fprintf(stderr, "can't open %s\n", fname); exit(1); }
+    fprintf(f, "P6\n%d %d\n255\n", CANVAS_WIDTH, CANVAS_HEIGHT);
+    for (int x = 0; x < CANVAS_WIDTH; x++) {
+      for (int y = 0; y < CANVAS_HEIGHT; y++) {
+        buf[CANVAS_HEIGHT-1-y][x][0] = cs[i][x][y].r;
+        buf[CANVAS_HEIGHT-1-y][x][1] = cs[i][x][y].g;
+        buf[CANVAS_HEIGHT-1-y][x][2] = cs[i][x][y].b;
+      }
+    }
+
+    fwrite(buf, sizeof(buf), 1, f);
+    fclose(f);
   }
 }
 
@@ -91,7 +82,7 @@ void renderScene2(void) {
   int rollTime = (int) t-15; // 意味の薄い微調整
   int sceneTime = (int)(t/10 + 2) * 10; // 少し余裕を持たせる
 
-  // ここまで
+  // 計算ここまで
 
   CANVAS cs[stroke + sceneTime];
   for (int i = 0; i < stroke + sceneTime; i++) {
@@ -104,6 +95,7 @@ void renderScene2(void) {
   // 跳ねて入ってきたボール
   animateBall(cs, 0, crashTime, bounceTime, (struct atlas){-100, GROUND_Y, 200, 65}, ballColor);
   
+  // ボールが減速する
   for (int i = 0; i < rollTime; i++) {
     v0 -= a;
     x0 += (int)v0;
