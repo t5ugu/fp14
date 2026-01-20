@@ -9,7 +9,7 @@
 #define FRAME_t int
 // drawCircle には、このまま入れてよい
 #define BALL_RAD 10 //px
-#define GROUND_Y (CANVAS_HEIGHT - 50) //px
+#define MAX_CRASH_RATE 0.8
 
 // c: crashTime + bounceTime + crashTime 枚のキャンバス
 // asZero  <= t <= aZ + crashTime: つぶれている; 中心は (a.x, a.y+a.h)

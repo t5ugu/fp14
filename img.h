@@ -14,7 +14,4 @@ void drawTree(CANVAS c, struct atlas a);
 /* t: アニメーション用の時刻（フレーム数など） */
 void drawGoal(CANVAS c, struct atlas a, int t);
 
-/* つぶれたボールを描く */
-void drawSquashedBall(CANVAS c, int x, int y);
-
 #endif

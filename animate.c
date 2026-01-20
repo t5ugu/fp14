@@ -18,22 +18,19 @@ void animateBall(
     struct color ballColor
 ) {
     FRAME_t stroke = crashTime + bounceTime + crashTime;
+    double x, y, h;
 
     for (FRAME_t t = 0; t < stroke; t++) {
         FRAME_t frame = asZero + t;
-        double x, y, h;
 
         /* ① 地面でつぶれている状態 */
-        if (t < crashTime) {
-            x = a.x;
-            y = a.y + a.h;
-            h = (double)a.h * t / crashTime / 2;
-            drawEllipse(cs[frame], (struct atlas){(int)(x - BALL_RAD), GROUND_Y - (int)h, BALL_RAD * 2, (int)h}, ballColor);
+        if (t <= crashTime) {
+            h = t * (1 - MAX_CRASH_RATE) / crashTime + MAX_CRASH_RATE;
+            drawEllipse(cs[frame], (struct atlas){a.x - BALL_RAD, a.y - BALL_RAD, BALL_RAD * 2, (int)(2 * BALL_RAD * h)}, ballColor);
         }
         /* ② 放物運動で跳ね上がる状態 */
         else if (t < crashTime + bounceTime) {
-            FRAME_t tb = t - crashTime;
-            double r = (double)tb / bounceTime;
+            double r = (double)(t - crashTime) / bounceTime;
 
             /* xは等速、yは二次関数 */
             x = a.x + a.w * r;
@@ -43,10 +40,8 @@ void animateBall(
         }
         /* ③ 着地後につぶれる状態 */
         else {
-            x = a.x + a.w;
-            y = a.y + a.h;
-            h = (double)a.h * (t - crashTime - bounceTime) / crashTime / 2;
-            drawEllipse(cs[frame], (struct atlas){(int)(x - BALL_RAD), GROUND_Y - (int)h, BALL_RAD * 2, (int)h}, ballColor);
+            h = (double)(stroke - t) * (1 - MAX_CRASH_RATE) / crashTime + MAX_CRASH_RATE;
+            drawEllipse(cs[frame], (struct atlas){a.x + a.w - BALL_RAD, a.y - BALL_RAD, BALL_RAD * 2, (int)(2 * BALL_RAD * h)}, ballColor);
         }
     }
 }

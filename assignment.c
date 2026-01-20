@@ -5,12 +5,15 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define GROUND_Y 50
+
 static char fname[100];
 static int frame_count = 0;
-static struct color bgColor = {0, 127, 255};
-static struct color ballColor = {192, 192, 192};
-static struct color holeColor = {32, 32, 32};
-static FRAME_t crashTime = 7, bounceTime = 26;
+static const struct color bgColor = {0, 127, 255};
+static const struct color ballColor = {192, 192, 192};
+static const FRAME_t crashTime = 1, bounceTime = 30;
+static const FRAME_t stroke = crashTime + bounceTime + crashTime;
+static const FRAME_t halfStroke = stroke / 2;
 
 struct atlas* mkAtlas(int x, int y, int w, int h) {
   struct atlas* a = malloc(sizeof(struct atlas));
@@ -39,12 +42,12 @@ void writeCanvas(CANVAS c) {
   FILE *f = fopen(fname, "wb");
   if(f == NULL) { fprintf(stderr, "can't open %s\n", fname); exit(1); }
   fprintf(f, "P6\n%d %d\n255\n", CANVAS_WIDTH, CANVAS_HEIGHT);
-  unsigned char buf[CANVAS_WIDTH][CANVAS_HEIGHT][3];
+  unsigned char buf[CANVAS_HEIGHT][CANVAS_WIDTH][3];
   for (int x = 0; x < CANVAS_WIDTH; x++) {
     for (int y = 0; y < CANVAS_HEIGHT; y++) {
-      buf[x][y][0] = c[x][y].r;
-      buf[x][y][1] = c[x][y].g;
-      buf[x][y][2] = c[x][y].b;
+      buf[CANVAS_HEIGHT-1-y][x][0] = c[x][y].r;
+      buf[CANVAS_HEIGHT-1-y][x][1] = c[x][y].g;
+      buf[CANVAS_HEIGHT-1-y][x][2] = c[x][y].b;
     }
   }
 
@@ -52,7 +55,7 @@ void writeCanvas(CANVAS c) {
   fclose(f);
 }
 
-void writeConvases(CANVAS* cs, FRAME_t start, FRAME_t end) {
+void writeCanvases(CANVAS* cs, FRAME_t start, FRAME_t end) {
   for (int i = start; i < end; i++) {
     writeCanvas(cs[i]);
   }
@@ -60,8 +63,6 @@ void writeConvases(CANVAS* cs, FRAME_t start, FRAME_t end) {
 
 void renderScene1(void) {
   int ballHeight = 180;
-  FRAME_t stroke = crashTime + bounceTime + crashTime;
-  FRAME_t halfStroke = stroke / 2;
   
   // ボールが3回、跳ねながら左から右へ。
   CANVAS cs[stroke*3];
@@ -70,38 +71,45 @@ void renderScene1(void) {
     clearCanvas(cs[i]);
   }
   for (int i = 0; i < 3; i++) {
-    animateBall(cs, stroke * i, crashTime, bounceTime, (struct atlas){-100 + 200 * i, GROUND_Y - ballHeight, 200, ballHeight}, ballColor);
+    animateBall(cs, stroke * i, crashTime, bounceTime, (struct atlas){-100 + 200 * i, GROUND_Y, 200, ballHeight}, ballColor);
     ballHeight = (int)(ballHeight*0.6);
   }
-  writeConvases(cs, halfStroke, halfStroke + stroke*2);
+  writeCanvases(cs, halfStroke, halfStroke + stroke*2);
 }
 
 void renderScene2(void) {
-  struct atlas tree = {150, 70, 120, 180};
-  struct atlas goal = {320, 100, 50, 150};
+  struct atlas tree = {150, GROUND_Y, 120, 180};
+  struct atlas goal = {320, GROUND_Y, 50, 150};
 
-  CANVAS cs[bounceTime + 30];
-  for (int i = 0; i < bounceTime + 30; i++) {
+  // v0 on x0  -->  0 on x1 となるような等加速度運動
+
+  int x0 = 100;
+  double v0 = 200 / bounceTime;
+  int x1 = goal.x + goal.w * 1.5;
+  double a = (v0 * v0) / (2 * (x1 - x0));
+  double t = v0 / a;
+  int rollTime = (int) t-15; // 意味の薄い微調整
+  int sceneTime = (int)(t/10 + 2) * 10; // 少し余裕を持たせる
+
+  // ここまで
+
+  CANVAS cs[stroke + sceneTime];
+  for (int i = 0; i < stroke + sceneTime; i++) {
     cs[i] = createCanvas();
     clearCanvas(cs[i]);
     drawTree(cs[i], tree);
     drawGoal(cs[i], goal, i);
-    drawEllipse(cs[i], (struct atlas){300, GROUND_Y - 7, 40, 14}, holeColor);
   }
   
   // 跳ねて入ってきたボール
-  animateBall(cs, 0, 0, bounceTime, (struct atlas){-100, GROUND_Y - 65, 200, 65}, ballColor);
+  animateBall(cs, 0, crashTime, bounceTime, (struct atlas){-100, GROUND_Y, 200, 65}, ballColor);
   
-  // 徐々に減速して消える(ゴールに入るつもり。判定は無いので要調整)
-  int x = 100;
-  int velocity = 200 / bounceTime;
-  // magic number
-  for (int i = 0; i < 20; i++) {
-    x += velocity;
-    drawCircle(cs[bounceTime + i], x, 50, BALL_RAD, ballColor);
-    velocity -= 1;
+  for (int i = 0; i < rollTime; i++) {
+    v0 -= a;
+    x0 += (int)v0;
+    drawCircle(cs[stroke + i], x0, GROUND_Y + BALL_RAD, BALL_RAD, ballColor);
   }
-  writeConvases(cs, 0, bounceTime + 30);
+  writeCanvases(cs, halfStroke, halfStroke + sceneTime);
 }
 
 void renderScene3(void) {
@@ -113,12 +121,11 @@ void renderScene3(void) {
   for (int i = 0; i < frames; i++) {
     cs[i] = createCanvas();
     clearCanvas(cs[i]);
-    drawTree(cs[i], (struct atlas){150, 70 - (int)yoffset, 120, 180});
-    drawGoal(cs[i], (struct atlas){320, 100 - (int)yoffset, 50, 150}, bounceTime + 29 - i);
-    drawEllipse(cs[i], (struct atlas){300, GROUND_Y - 7 - (int)yoffset, 40, 14}, holeColor);
+    drawTree(cs[i], (struct atlas){150, GROUND_Y + (int)yoffset, 120, 180});
+    drawGoal(cs[i], (struct atlas){320, GROUND_Y + (int)yoffset, 50, 150}, bounceTime + 29 - i);
     yoffset = yoffset * scale;
   }
-  writeConvases(cs, 0, frames);
+  writeCanvases(cs, 0, frames);
 }
 
 int main(void) {

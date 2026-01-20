@@ -8,8 +8,8 @@ struct color { unsigned char r, g, b; };
 #define CANVAS struct color**
 
 // 図形を描く区間
-// 左から x px, 上から y px, 右向きに h px, 下向きに w px
-struct atlas { int x, y, h, w; };
+// 左から x px, 上から y px, 右向きに w px, 下向きに h px
+struct atlas { int x, y, w, h; };
 
 void drawPixel(CANVAS c, int x, int y, struct color clr);
 

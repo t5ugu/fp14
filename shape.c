@@ -17,9 +17,8 @@ void drawPixel(CANVAS c, int x, int y, struct color clr) {
 
 /* 長方形を描く関数 */
 void drawRectangle(CANVAS c, struct atlas a, struct color clr) {
-    /* h=横幅, w=高さ としてループを回す */
-    for(int j = 0; j < a.w; j++) {
-        for(int i = 0; i < a.h; i++) {
+    for(int j = 0; j < a.h; j++) {
+        for(int i = 0; i < a.w; i++) {
             drawPixel(c, a.x + i, a.y + j, clr);
         }
     }
@@ -27,13 +26,13 @@ void drawRectangle(CANVAS c, struct atlas a, struct color clr) {
 
 /* 楕円を描く関数 */
 void drawEllipse(CANVAS c, struct atlas a, struct color clr) {
-    double rx = a.h / 2.0;
-    double ry = a.w / 2.0;
+    double rx = a.w / 2.0;
+    double ry = a.h / 2.0;
     double cx = a.x + rx;
     double cy = a.y + ry;
 
-    for(int j = 0; j < a.w; j++) {
-        for(int i = 0; i < a.h; i++) {
+    for(int j = 0; j < a.h; j++) {
+        for(int i = 0; i < a.w; i++) {
             double dx = (a.x + i - cx);
             double dy = (a.y + j - cy);
             /* 楕円の方程式: (x^2/a^2) + (y^2/b^2) <= 1 */
@@ -47,20 +46,13 @@ void drawEllipse(CANVAS c, struct atlas a, struct color clr) {
 /* 二等辺三角形を描く関数 */
 void drawIsocelesTriangle(CANVAS c, struct atlas a, struct color clr) {
     /* 底辺の中央のX座標 */
-    double top_x = a.x + a.h / 2.0;
-    
-    for(int j = 0; j < a.w; j++) {
-        for(int i = 0; i < a.h; i++) {
-            int px = a.x + i;
-            int py = a.y + j;
-            
-            /* 上に行くほど幅が狭くなる計算 */
-            double progress = (double)j / a.w; 
-            double current_w = progress * a.h; 
-            
-            if (px >= top_x - current_w/2.0 && px <= top_x + current_w/2.0) {
-                drawPixel(c, px, py, clr);
-            }
+    for(int py = a.y; py < a.y + a.h; py++) {
+        /* 上に行くほど幅が狭くなる計算 */
+        double progress = (double)(py - a.y) / a.h / 2;
+
+        int pxl = a.w * progress, pxr = a.w * (1 - progress);
+        for(int px = pxl; px < pxr; px++) {
+            drawPixel(c, a.x + px, py, clr);    
         }
     }
 }
